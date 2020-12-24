@@ -1,0 +1,16 @@
+<launch>
+    <node name="pure_pursuit" pkg="autoware_track_path" type="pure_pursuit" output="screen">
+        <param name="debug_mode" value="false" />
+        <param name="Vcmd" value="1.5"/>
+        <param name="L" value="2.95"/>
+        <param name="Lfw" value="2.0" />
+        <param name="goal_radius" value="0.3" />
+        <param name="cmd_vel_mode" value="true" />
+        <remap from="/pure_pursuit/odom" to="autoware/odom" />
+        <remap from="/pure_pursuit/goal" to="/move_base_simple/goal" />
+        <remap from="/pure_pursuit/cmd_vel" to="/autoware/cmd_vel" />
+        <!-- /BSplineRRTPlanner/plan -->
+        <!-- /move_base/KindynamicPlannerROS/local_plan -->
+        <remap from="/pure_pursuit/global_planner" to="/move_base/KindynamicPlannerROS/local_plan" />
+    </node>
+</launch>

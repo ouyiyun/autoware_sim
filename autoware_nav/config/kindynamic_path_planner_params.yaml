@@ -1,0 +1,19 @@
+KindynamicPlannerROS:
+    odom_topic: odom
+
+    # pure pursuit
+    wheel_base: 2.95
+    forward_distance: 3.0
+    reference_vel: 2.0
+
+    # vehicle limits
+    max_angle_limit: 0.5 #rad
+    min_angle_limit: -0.5
+
+    xy_goal_tolerance_: 0.3
+
+    # smooth params
+    voronoi_field_weight: 1.1
+    obstacles_weight: 1.2
+    curvature_weight: 1.3
+    smooth_weight: 1.4

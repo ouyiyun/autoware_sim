@@ -1,0 +1,404 @@
+<?xml version="1.0" ?>
+
+<robot name="$(arg roboname)" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:property name="PI" value="3.1415926835897931"/>
+
+    <!-- load parameter -->
+    <xacro:property name="vehicle_info" value="${load_yaml('$(find autoware_description)/config/autoware_info.yaml')}"/>
+    <!-- set parameter -->
+    <xacro:property name="wheel_radius" value="${vehicle_info['wheel_radius']}"/>
+    <xacro:property name="wheel_width" value="${vehicle_info['wheel_width']}"/>
+    <xacro:property name="wheel_base" value="${vehicle_info['wheel_base']}"/>
+    <xacro:property name="wheel_tread" value="${vehicle_info['wheel_tread']}"/>
+    <xacro:property name="vehicle_mass" value="${vehicle_info['vehicle_mass']}"/>
+    <xacro:property name="vehicle_length" value="${vehicle_info['vehicle_length']}"/>
+    <xacro:property name="vehicle_width" value="${vehicle_info['vehicle_width']}"/>
+    <xacro:property name="vehicle_height" value="${vehicle_info['vehicle_height']}"/>
+    <xacro:property name="str_angle" value="${vehicle_info['str_angle']}"/>
+
+    <!-- steering -->
+    <xacro:property name="str_length" value="0.01"/>
+    <xacro:property name="str_radius" value="0.1"/>
+    <xacro:property name="str_mass" value="5"/>
+    <xacro:property name="str_mass_ixx" value="0.012"/>
+    <xacro:property name="str_mass_iyy" value="0.025"/>
+    <xacro:property name="str_mass_izz" value="0.012"/> 
+
+    <!-- body-->
+    <link name="base_footprint"/>
+
+    <joint name="base_joint" type="fixed">
+        <parent link="base_footprint"/>
+        <origin rpy="0 0 0" xyz="0 0 ${wheel_radius}"/>
+        <child  link="base_link"/>
+    </joint>
+
+    <link name="base_link">
+        <collision>
+            <origin xyz="${wheel_base/2} 0 ${vehicle_height/2}" rpy="0 0 0"/>  
+            <geometry>
+                <box size="${vehicle_length} 0.9 ${vehicle_height}"/>
+            </geometry>
+        </collision>
+
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>  
+            <geometry>
+                <mesh filename="package://autoware_description/meshes/body.dae" scale="${wheel_base/2.85} 1 1"/>
+                <box size="{vehicle_length} 0.9 ${vehicle_height}"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <joint name="inertial_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="main_mass"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="main_mass" type="fixed">
+        <inertial>
+            <origin xyz="${wheel_base/2} 0 0" rpy="0 0 0"/>
+            <mass value="956"/>
+            <inertia
+                ixx="343"  ixy="0.000000"  ixz="0.000000"
+                iyy="728"  iyz="0.000000"
+                izz="772"/>
+        </inertial>
+    </link>
+
+    <!--Rear Right Wheel-->
+    <joint name="rear_right_wheel_joint" type="continuous">
+        <parent link="base_link"/>
+        <child link="rear_right_wheel_link"/>
+        <origin xyz="0 ${-1*wheel_tread/2} 0" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <dynamics damping="0.1"/>
+        <limit effort="100000" velocity="10000" />
+        <joint_properties damping="0.0" friction="0.0" />
+    </joint> 
+    
+    <link name="rear_right_wheel_link">
+        <collision>
+            <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
+            <geometry>
+                <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
+            </geometry>
+        </collision>
+
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 -${PI/2}"/>
+            <geometry>
+                <mesh filename="package://autoware_description/meshes/wheel.dae" scale="${3*wheel_radius} ${3*wheel_radius} ${3*wheel_radius}"/>
+                <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
+            </geometry>
+        </visual>
+
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="20"/>
+            <inertia
+                ixx="0.5"  ixy="0.000000"  ixz="0.000000"
+                iyy="0.9"  iyz="0.000000"
+                izz="0.5"/>
+        </inertial>
+    </link>
+
+    <!--Rear Left Wheel-->
+    <joint name="rear_left_wheel_joint" type="continuous">
+        <parent link="base_link"/>
+        <child link="rear_left_wheel_link"/>
+        <origin xyz="0 ${wheel_tread/2} 0" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <dynamics damping="0.1"/>
+        <limit effort="100000" velocity="10000" />
+        <joint_properties damping="0.0" friction="0.0" />
+    </joint>
+
+    <link name="rear_left_wheel_link">
+        <collision>
+            <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
+            <geometry>
+                <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
+            </geometry>
+        </collision>
+
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 ${PI/2}"/>
+            <geometry>
+                <mesh filename="package://autoware_description/meshes/wheel.dae" scale="${3*wheel_radius} ${3*wheel_radius} ${3*wheel_radius}"/>
+                <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
+            </geometry>
+        </visual>
+
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="20"/>
+            <inertia
+                ixx="0.5"  ixy="0.000000"  ixz="0.000000"
+                iyy="0.9"  iyz="0.000000"
+                izz="0.5"/>
+        </inertial>
+    </link>
+
+    <!--Front Right Steering-->
+    <joint name="front_right_steering_joint" type="revolute">
+        <parent link="base_link"/>
+        <child link="front_right_steering_link"/>
+        <origin xyz="${wheel_base} ${-1*wheel_tread/2} 0" rpy="0 0 0"/>
+        <axis xyz="0 0 1"/>
+        <limit lower="${-str_angle}" upper="${str_angle}" effort="1000000.0" velocity="10000.0"/>
+        <dynamics damping="10.0" friction="0.0"/>
+    </joint>
+
+    <link name="front_right_steering_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
+            <geometry>
+                <cylinder length="${str_length}" radius="${str_radius}"/>
+            </geometry>
+        </visual>
+
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="${str_mass}"/>
+            <inertia
+            ixx="${str_mass_ixx}"  ixy="0.000000"  ixz="0.000000"
+            iyy="${str_mass_iyy}"  iyz="0.000000"
+            izz="${str_mass_izz}"/>
+        </inertial>
+    </link>
+
+    <!--Front Right Wheel-->
+    <joint name="front_right_wheel_joint" type="continuous">
+        <parent link="front_right_steering_link"/>
+        <child link="front_right_wheel_link"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <dynamics damping="0.1"/>
+        <limit effort="1000000" velocity="10000" />
+        <joint_properties damping="0.0" friction="0.0" />
+    </joint>
+
+    <link name="front_right_wheel_link">
+        <collision>
+            <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
+            <geometry>
+                <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
+            </geometry>
+        </collision>
+
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 -${PI/2}"/>
+            <geometry>
+                <mesh filename="package://autoware_description/meshes/wheel.dae" scale="${3*wheel_radius} ${3*wheel_radius} ${3*wheel_radius}"/>
+                <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
+            </geometry>  
+        </visual>
+
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="20"/>
+            <inertia
+                ixx="0.5"  ixy="0.000000"  ixz="0.000000"
+                iyy="0.9"  iyz="0.000000"
+                izz="0.5"/>
+        </inertial>
+    </link>
+
+    <!--Front Left Steering-->
+    <joint name="front_left_steering_joint" type="revolute">
+        <parent link="base_link"/>
+        <child link="front_left_steering_link"/>
+        <origin xyz="${wheel_base} ${wheel_tread/2} 0" rpy="0 0 0"/>
+        <axis xyz="0 0 1"/>
+        <limit lower="${-str_angle}" upper="${str_angle}" effort="1000000.0" velocity="10000.0"/>
+        <dynamics damping="10.0" friction="0.0"/>
+    </joint>
+    
+    <link name="front_left_steering_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
+            <geometry>
+                <cylinder length="${str_length}" radius="${str_radius}"/>
+            </geometry>
+        </visual>
+
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="${str_mass}"/>
+            <inertia
+            ixx="${str_mass_ixx}"  ixy="0.000000"  ixz="0.000000"
+            iyy="${str_mass_iyy}"  iyz="0.000000"
+            izz="${str_mass_izz}"/>
+        </inertial>
+    </link>
+
+    <!--Front Left Wheel-->
+    <joint name="front_left_wheel_joint" type="continuous">
+        <parent link="front_left_steering_link"/>
+        <child link="front_left_wheel_link"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <dynamics damping="0.1"/>
+        <limit effort="1000000" velocity="10000" />
+        <joint_properties damping="0.0" friction="0.0" />
+    </joint>
+
+    <link name="front_left_wheel_link">
+        <collision>
+            <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
+            <geometry>
+                <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
+            </geometry>
+        </collision>
+
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 ${PI/2}"/>
+            <geometry>
+                <mesh filename="package://autoware_description/meshes/wheel.dae" scale="${3*wheel_radius} ${3*wheel_radius} ${3*wheel_radius}"/>
+                <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
+            </geometry>  
+        </visual>
+
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="20"/>
+            <inertia
+                ixx="0.5"  ixy="0.000000"  ixz="0.000000"
+                iyy="0.9"  iyz="0.000000"
+                izz="0.5"/>
+        </inertial>
+    </link> 
+
+    <!-- motors and transmissions for the two rear wheels -->
+    <transmission name="tran1">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="rear_right_wheel_joint">
+            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="motor1">
+            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+
+    <transmission name="tran2">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="rear_left_wheel_joint">
+            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="motor2">
+            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+
+    <!-- EPS and transmissions for the front steering -->
+    <transmission name="tran3">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="front_right_steering_joint">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="eps_right">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+            <motorTorqueConstant>1000000</motorTorqueConstant>
+        </actuator>
+    </transmission>
+
+    <transmission name="tran4">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="front_left_steering_joint">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="eps_left">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+            <motorTorqueConstant>1000000</motorTorqueConstant>
+        </actuator>
+    </transmission>
+
+    <!-- Friction Parametres -->
+    <gazebo reference="rear_right_wheel_link">
+        <mu1>10000000</mu1>
+        <mu2>10000000</mu2>
+        <kp>10000000</kp>
+        <kd>1</kd>
+        <minDepth>0.01</minDepth>
+        <maxVel>100</maxVel>  
+    </gazebo>  
+
+    <gazebo reference="rear_left_wheel_link">
+        <mu1>10000000</mu1>
+        <mu2>10000000</mu2>
+        <kp>10000000</kp>
+        <kd>1</kd>     
+        <minDepth>0.01</minDepth>
+        <maxVel>100</maxVel>      
+    </gazebo>   
+
+    <gazebo reference="front_right_wheel_link">
+        <mu1>10000000</mu1>
+        <mu2>10000000</mu2>
+        <kp>10000000</kp>
+        <kd>1</kd>
+        <minDepth>0.01</minDepth>
+        <maxVel>100</maxVel>           
+    </gazebo> 
+
+    <gazebo reference="front_left_wheel_link">
+        <mu1>10000000</mu1>
+        <mu2>10000000</mu2>
+        <kp>10000000</kp>
+        <kd>1</kd>  
+        <minDepth>0.01</minDepth>
+        <maxVel>100</maxVel>          
+    </gazebo>
+
+    <!-- Gazebo Plugins -->
+    <gazebo>
+        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+            <robotNamespace>/$(arg roboname)</robotNamespace>
+            <robotParam>robot_description</robotParam>
+            <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+        </plugin>
+    </gazebo>
+
+    <gazebo>
+        <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+            <jointName>rear_left_wheel_joint, rear_right_wheel_joint, front_left_steering_joint, front_right_steering_joint, front_right_wheel_joint, front_left_wheel_joint</jointName>
+            <updateRate>50.0</updateRate>
+            <robotNamespace>/$(arg roboname)</robotNamespace>
+            <alwaysOn>true</alwaysOn>
+        </plugin>
+    </gazebo>
+
+    <!-- sensor -->
+    <xacro:property name="calibration" value="${load_yaml('$(find autoware_description)/config/sensor_calibration.yaml')}"/>
+    <xacro:include filename="$(find velodyne_description)/urdf/HDL-32E.urdf.xacro"/>
+    <HDL-32E parent="base_link" name="velodyne" topic="/points_raw" hz="10" samples="220" gpu="false">
+        <origin xyz="${calibration['base_link2velodyne']['x']} ${calibration['base_link2velodyne']['y']} ${calibration['base_link2velodyne']['z']}" 
+                rpy="${calibration['base_link2velodyne']['roll']} ${calibration['base_link2velodyne']['pitch']} ${calibration['base_link2velodyne']['yaw']}" />
+    </HDL-32E>
+
+    <xacro:include filename="$(find autoware_description)/urdf/monocular_camera.xacro"/>
+    <xacro:monocular_camera_macro suffix="camera" parent="base_link" namespace="" 
+                                    x="${calibration['base_link2camera']['x']}"
+                                    y="${calibration['base_link2camera']['y']}"
+                                    z="${calibration['base_link2camera']['z']}"
+                                    roll="${calibration['base_link2camera']['roll']}"
+                                    pitch="${calibration['base_link2camera']['pitch']}"
+                                    yaw="${calibration['base_link2camera']['yaw']}"
+                                    fps="30" width="800" height="400" fov="1.3"/>
+
+    <xacro:include filename="$(find autoware_description)/urdf/imu.xacro"/>
+    <xacro:imu_macro suffix="imu" parent="base_link" namespace=""
+                    x="${calibration['base_link2imu']['x']}"
+                    y="${calibration['base_link2imu']['y']}"
+                    z="${calibration['base_link2imu']['z']}"
+                    roll="${calibration['base_link2imu']['roll']}"
+                    pitch="${calibration['base_link2imu']['pitch']}"
+                    yaw="${calibration['base_link2imu']['yaw']}"
+                    fps="100" />
+</robot>
