@@ -15,12 +15,12 @@
         <!-- srrt_rs_plan/SRRTRSPlanner -->
         <param name="base_global_planner" value="global_planner/GlobalPlanner" />
         <!-- <param name="planner_frequency" value="1.0" />
-		<param name="planner_patience" value="5.0" /> -->
+        <param name="planner_patience" value="5.0" /> -->
 
         <!-- teb_local_planner/TebLocalPlannerROS -->
         <!-- kindynamic_path_planner/KindynamicPlannerROS -->
         <param name="base_local_planner" value="kindynamic_path_planner/KindynamicPlannerROS" />
-        <param name="controller_frequency" value="20.0" />
+        <param name="controller_frequency" value="10.0" />
         <param name="controller_patience" value="15.0" />
 
         <param name="clearing_rotation_allowed" value="false" />

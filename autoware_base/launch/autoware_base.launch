@@ -6,7 +6,7 @@
     <arg name="init_z" default="0.0"/>
 
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
-        <arg name="world_name" value="$(arg world_name)"/> 
+        <arg name="world_name" value="$(arg world_name)"/>
         <arg name="paused" value="false"/>
         <arg name="use_sim_time" value="true"/>
         <arg name="gui" value="true"/>
@@ -17,21 +17,19 @@
     <!-- spawn model -->
     <include file="$(find autoware_description)/launch/autoware_gazebo.launch">
         <arg name="x" value="$(arg init_x)"/>
-		<arg name="y" value="$(arg init_y)"/>
-		<arg name="z" value="$(arg init_z)"/>
-		<arg name="robot_name" value="autoware"/>
+        <arg name="y" value="$(arg init_y)"/>
+        <arg name="z" value="$(arg init_z)"/>
+        <arg name="robot_name" value="autoware"/>
     </include>
 
     <!-- Load joint controller configurations from YAML file to parameter server -->
     <rosparam file="$(find autoware_base)/config/autoware_control_config.yaml" command="load"/>
     <!-- load controllers -->
-    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
-            output="screen" ns="autoware" args="joint_state_controller rear_right_velocity_controller 
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="autoware" args="joint_state_controller rear_right_velocity_controller 
             rear_left_velocity_controller front_right_steering_position_controller 
             front_left_steering_position_controller"/>
-    
-    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
-        respawn="true" output="screen">
+
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen">
         <remap from="/joint_states" to="/autoware/joint_states" />
     </node>
 
@@ -40,10 +38,10 @@
     <node name="autoware_base" pkg="autoware_base" type="autoware_base" output="screen" ns="autoware"/>
 
     <!--pointcloud to laserscan-->
-	<node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan" output="screen">
+    <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan" output="screen">
         <remap from="cloud_in" to="/points_raw"/>
         <rosparam>
-            target_fram: scan
+            <!-- target_frame: base_footprint -->
             transform_tolerance: 0.01
             min_height: -2.3
             max_height: 1.0
@@ -57,18 +55,18 @@
             inf_epsilon: 1.0
             concurrency_level: 1
         </rosparam>
-    </node> 
-    
+    </node>
+
     <!-- fake location -->
-	<node pkg="fake_localization" type="fake_localization" name="location" output="screen">
-		<remap from="base_pose_ground_truth" to="autoware/odom"/>
-		<param name="odom_frame_id" value="odom"/>
-		<param name="global_frame_id" value="map"/>
-		<param name="base_frame_id" value="base_footprint"/>
-		<param name="delta_x" value="$(arg init_x)"/>
-		<param name="delta_y" value="$(arg init_y)"/>
-		<param name="delta_yaw" value="$(arg init_z)"/>
-	</node>
+    <node pkg="fake_localization" type="fake_localization" name="location" output="screen">
+        <remap from="base_pose_ground_truth" to="autoware/odom"/>
+        <param name="odom_frame_id" value="odom"/>
+        <param name="global_frame_id" value="map"/>
+        <param name="base_frame_id" value="base_footprint"/>
+        <param name="delta_x" value="$(arg init_x)"/>
+        <param name="delta_y" value="$(arg init_y)"/>
+        <param name="delta_yaw" value="$(arg init_z)"/>
+    </node>
 
     <node pkg="tf2_ros" type="static_transform_publisher" name="world2map" args="0 0 0 0 0 0 world map" />
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find autoware_base)/rviz_config/autoware.rviz" required="true" />

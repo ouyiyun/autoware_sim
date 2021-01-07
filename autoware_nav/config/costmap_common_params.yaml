@@ -5,15 +5,26 @@ map_type: costmap
 
 obstacle_layer:
     enabled: true
-    obstacle_range: 10.0 #3.0
-    raytrace_range: 12.0 #3.5
+    obstacle_range: 45.0 #3.0
+    raytrace_range: 55.0 #3.5
     inflation_radius: 0.95
     track_unknown_space: false
+    max_obstacle_height: 4.0
     combination_method: 1
 
     observation_sources: laser_scan_sensor
     laser_scan_sensor:
-        { data_type: LaserScan, topic: scan, marking: true, clearing: true }
+        {
+            data_type: LaserScan,
+            topic: scan,
+            marking: true,
+            clearing: false,
+            max_obstacle_height: 3.0,
+            min_obstacle_height: 0.0,
+            obstacle_range: 35.0,
+            raytrace_range: 40.0,
+            inf_is_valid: True,
+        }
 
 inflation_layer:
     enabled: true
